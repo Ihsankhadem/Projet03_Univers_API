@@ -1,4 +1,3 @@
-
 import { Request, Response } from "express";
 import EventModel from "../models/event.model";
 
@@ -32,10 +31,18 @@ const EventController = {
     try {
       const { title, date, location, image, description } = req.body;
       if (!title || !date) {
-        res.status(400).json({ error: "Champs obligatoires manquants (title, date)" });
+        res
+          .status(400)
+          .json({ error: "Champs obligatoires manquants (title, date)" });
         return;
       }
-      const id = await EventModel.create({ title, date, location, image, description });
+      const id = await EventModel.create({
+        title,
+        date,
+        location,
+        image,
+        description,
+      });
       res.status(201).json({ id, message: "Événement créé avec succès" });
     } catch (err) {
       res.status(500).json({ error: "Erreur serveur", details: err });

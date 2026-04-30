@@ -13,9 +13,9 @@ const AuthController = {
   // REGISTER
   register: async (req: Request, res: Response) => {
     try {
-      let { name, email, password } = req.body;
+      let { name, email } = req.body;
+      const { password } = req.body;
 
-      // Normalisation
       name = name?.trim();
       email = email?.trim().toLowerCase();
 
@@ -61,7 +61,7 @@ const AuthController = {
         name,
         email,
         password: hashedPassword,
-        role: "rédacteur", 
+        role: "rédacteur",
       });
 
       return res.status(201).json({
@@ -77,9 +77,10 @@ const AuthController = {
   },
 
   // LOGIN
-  login: async (req: Request, res: Response) => {
-    try {
-      let { email, password } = req.body;
+    login: async (req: Request, res: Response) => {
+      try {
+        let { email } = req.body;
+        const { password } = req.body;
 
       // Validation basique
       if (!email || !password) {
@@ -92,7 +93,7 @@ const AuthController = {
 
       const user = await UserModel.findByEmail(email);
 
-      // ⚠️ message volontairement vague
+      // message volontairement vague
       if (!user) {
         return res.status(401).json({
           message: "Identifiants invalides",
@@ -114,7 +115,7 @@ const AuthController = {
           role: user.role,
         },
         JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "1h" },
       );
 
       return res.status(200).json({

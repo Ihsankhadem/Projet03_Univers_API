@@ -1,4 +1,3 @@
-
 import { Request, Response } from "express";
 import ArticleModel from "../models/article.model";
 import { AuthRequest } from "../middlewares/role.middleware";
@@ -28,7 +27,7 @@ const ArticleController = {
   getByAuthor: async (req: Request, res: Response) => {
     try {
       const articles = await ArticleModel.findByAuthor(
-        Number(req.params.author_id)
+        Number(req.params.author_id),
       );
       res.json(articles);
     } catch (err) {
@@ -39,9 +38,7 @@ const ArticleController = {
   // GET /api/articles/:id
   getOne: async (req: Request, res: Response) => {
     try {
-      const article = await ArticleModel.findById(
-        Number(req.params.id)
-      );
+      const article = await ArticleModel.findById(Number(req.params.id));
 
       if (!article) {
         res.status(404).json({ error: "Article non trouvé" });
@@ -81,7 +78,7 @@ const ArticleController = {
     try {
       const affected = await ArticleModel.update(
         Number(req.params.id),
-        req.body
+        req.body,
       );
 
       if (!affected) {
@@ -98,9 +95,7 @@ const ArticleController = {
   // DELETE
   delete: async (req: Request, res: Response) => {
     try {
-      const affected = await ArticleModel.delete(
-        Number(req.params.id)
-      );
+      const affected = await ArticleModel.delete(Number(req.params.id));
 
       if (!affected) {
         res.status(404).json({ error: "Article non trouvé" });

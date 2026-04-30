@@ -1,5 +1,5 @@
 // MyMemory API — gratuit, pas de limite par minute
-const EMAIL = "votre@email.com"; 
+const EMAIL = "votre@email.com";
 
 export async function translate(text: string): Promise<string> {
   if (!text?.trim()) return "";

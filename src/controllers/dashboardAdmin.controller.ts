@@ -1,6 +1,5 @@
 // src/controllers/dashboardAdmin.controller.ts
 
-
 import { Request, Response } from "express";
 import DashboardModel from "../models/dashboardAdmin.model";
 
@@ -20,26 +19,39 @@ const DashboardController = {
       const articles = await DashboardModel.getArticles(search);
       res.json(articles);
     } catch (err) {
-      res.status(500).json({ error: "Erreur récupération articles", details: err });
+      res
+        .status(500)
+        .json({ error: "Erreur récupération articles", details: err });
     }
   },
 
   getArticleById: async (req: Request, res: Response) => {
     try {
-      const article = await DashboardModel.getArticleById(Number(req.params.id));
+      const article = await DashboardModel.getArticleById(
+        Number(req.params.id),
+      );
       res.json(article);
     } catch (err) {
-      res.status(500).json({ error: "Erreur récupération article", details: err });
+      res
+        .status(500)
+        .json({ error: "Erreur récupération article", details: err });
     }
   },
 
   updateArticle: async (req: Request, res: Response) => {
     try {
       const { title, content, category_id, status } = req.body;
-      await DashboardModel.updateArticle(Number(req.params.id), { title, content, category_id, status });
+      await DashboardModel.updateArticle(Number(req.params.id), {
+        title,
+        content,
+        category_id,
+        status,
+      });
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: "Erreur mise à jour article", details: err });
+      res
+        .status(500)
+        .json({ error: "Erreur mise à jour article", details: err });
     }
   },
 
@@ -52,7 +64,9 @@ const DashboardController = {
 
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: "Erreur mise à jour statut", details: err });
+      res
+        .status(500)
+        .json({ error: "Erreur mise à jour statut", details: err });
     }
   },
 
@@ -62,12 +76,27 @@ const DashboardController = {
       await DashboardModel.deleteArticle(id);
       res.json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: "Erreur suppression article", details: err });
+      res
+        .status(500)
+        .json({ error: "Erreur suppression article", details: err });
     }
-  }
+  },
 
+  addArticle: async (req: Request, res: Response) => {
+    try {
+      const { title, content, author_id, category_id, status } = req.body;
+      await DashboardModel.addArticle({
+        title,
+        content,
+        author_id,
+        category_id,
+        status,
+      });
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: "Erreur ajout article", details: err });
+    }
+  },
 };
 
 export default DashboardController;
-
-
