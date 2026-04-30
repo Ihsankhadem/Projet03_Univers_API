@@ -1,4 +1,3 @@
-
 import { Request, Response } from "express";
 import NasaModel from "../models/nasa.model";
 

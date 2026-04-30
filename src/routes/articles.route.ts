@@ -13,7 +13,7 @@ router.get(
   "/admin",
   authenticate,
   requireRole(["administrateur"]),
-  ArticleController.getAllAdmin
+  ArticleController.getAllAdmin,
 );
 
 // GET by author
@@ -21,7 +21,7 @@ router.get(
   "/author/:author_id",
   authenticate,
   requireRole(["administrateur", "rédacteur"]),
-  ArticleController.getByAuthor
+  ArticleController.getByAuthor,
 );
 
 // TOUJOURS APRÈS les routes spécifiques
@@ -32,7 +32,7 @@ router.post(
   "/",
   authenticate,
   requireRole(["administrateur", "rédacteur"]),
-  ArticleController.create
+  ArticleController.create,
 );
 
 // PUT
@@ -40,7 +40,7 @@ router.put(
   "/:id",
   authenticate,
   requireRole(["administrateur", "rédacteur"]),
-  ArticleController.update
+  ArticleController.update,
 );
 
 // DELETE
@@ -48,7 +48,7 @@ router.delete(
   "/:id",
   authenticate,
   requireRole(["administrateur"]),
-  ArticleController.delete
+  ArticleController.delete,
 );
 
 export default router;

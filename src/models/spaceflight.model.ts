@@ -22,10 +22,10 @@ export interface SpaceflightResponse {
 }
 
 async function translateArticle(article: SpaceArticle): Promise<SpaceArticle> {
-  const titleKey   = `title_${article.id}`;
+  const titleKey = `title_${article.id}`;
   const summaryKey = `summary_${article.id}`;
 
-  let title   = translationCache.get(titleKey);
+  let title = translationCache.get(titleKey);
   let summary = translationCache.get(summaryKey);
 
   if (!title) {
@@ -40,14 +40,16 @@ async function translateArticle(article: SpaceArticle): Promise<SpaceArticle> {
   return { ...article, title, summary };
 }
 
-async function translateArticles(articles: SpaceArticle[]): Promise<SpaceArticle[]> {
+async function translateArticles(
+  articles: SpaceArticle[],
+): Promise<SpaceArticle[]> {
   return Promise.all(articles.map(translateArticle));
 }
 
 const SpaceflightModel = {
   getArticles: async (limit = 12, offset = 0): Promise<SpaceflightResponse> => {
     const res = await fetch(
-      `${BASE_URL}/articles/?limit=${limit}&offset=${offset}&ordering=-published_at`
+      `${BASE_URL}/articles/?limit=${limit}&offset=${offset}&ordering=-published_at`,
     );
     if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
     const data: SpaceflightResponse = await res.json();
@@ -57,7 +59,7 @@ const SpaceflightModel = {
 
   search: async (query: string, limit = 12): Promise<SpaceflightResponse> => {
     const res = await fetch(
-      `${BASE_URL}/articles/?search=${encodeURIComponent(query)}&limit=${limit}&ordering=-published_at`
+      `${BASE_URL}/articles/?search=${encodeURIComponent(query)}&limit=${limit}&ordering=-published_at`,
     );
     if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
     const data: SpaceflightResponse = await res.json();

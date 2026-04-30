@@ -1,5 +1,5 @@
 import pool from "../config/db";
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 interface StatsRow extends RowDataPacket {
   total: number;
@@ -7,6 +7,21 @@ interface StatsRow extends RowDataPacket {
   drafts: number;
   suspended: number;
   users: number;
+}
+
+interface ArticleRow extends RowDataPacket {
+  id: number;
+  title: string;
+  content: string;
+  image: string | null;
+  author_id: number;
+  status: string;
+  views: number;
+  created_at: string;
+  author: string;
+  categories?: string;
+  category_id?: number;
+  category?: string;
 }
 
 const DashboardModel = {
@@ -34,7 +49,7 @@ const DashboardModel = {
   },
 
   getArticles: async (search: string) => {
-    const [rows] = await pool.query<any[]>(
+    const [rows] = await pool.query<ArticleRow[]>(
       `
       SELECT 
         a.id,
@@ -55,14 +70,14 @@ const DashboardModel = {
       GROUP BY a.id
       ORDER BY a.created_at DESC
       `,
-      [`%${search}%`]
+      [`%${search}%`],
     );
 
     return rows;
   },
 
   getArticleById: async (id: number) => {
-    const [rows] = await pool.query<any[]>(
+    const [rows] = await pool.query<ArticleRow[]>(
       `
       SELECT 
         a.id,
@@ -91,7 +106,7 @@ const DashboardModel = {
       JOIN users u ON a.author_id = u.id_user
       WHERE a.id = ?
       `,
-      [id]
+      [id],
     );
 
     return rows[0] || null;
@@ -99,12 +114,21 @@ const DashboardModel = {
 
   updateArticle: async (
     id: number,
-    { title, content, category_id, status }: 
-    { title: string; content: string; category_id: number; status: string }
+    {
+      title,
+      content,
+      category_id,
+      status,
+    }: {
+      title: string;
+      content: string;
+      category_id: number;
+      status: string;
+    },
   ) => {
     await pool.query(
       `UPDATE articles SET title = ?, content = ?, status = ? WHERE id = ?`,
-      [title, content, status, id]
+      [title, content, status, id],
     );
 
     await pool.query(
@@ -113,29 +137,57 @@ const DashboardModel = {
       VALUES (?, ?)
       ON DUPLICATE KEY UPDATE id_categorie = VALUES(id_categorie)
       `,
-      [id, category_id]
+      [id, category_id],
     );
   },
 
-  updateStatus: async (id: number, status: "publié" | "brouillon" | "suspendu") => {
-    await pool.query(
-      `UPDATE articles SET status = ? WHERE id = ?`,
-      [status, id]
-    );
+  updateStatus: async (
+    id: number,
+    status: "publié" | "brouillon" | "suspendu",
+  ) => {
+    await pool.query(`UPDATE articles SET status = ? WHERE id = ?`, [
+      status,
+      id,
+    ]);
   },
 
   deleteArticle: async (id: number) => {
-  await pool.query(
-    `DELETE FROM article_categorie WHERE id_article = ?`,
-    [id]
-  );
+    await pool.query(`DELETE FROM article_categorie WHERE id_article = ?`, [
+      id,
+    ]);
 
-  await pool.query(
-    `DELETE FROM articles WHERE id = ?`,
-    [id]
-  );
-},
+    await pool.query(`DELETE FROM articles WHERE id = ?`, [id]);
+  },
 
+  addArticle: async ({
+    title,
+    content,
+    author_id,
+    category_id,
+    status,
+  }: {
+    title: string;
+    content: string;
+    author_id: number;
+    category_id: number;
+    status: string;
+  }) => {
+    const [result] = await pool.query<ResultSetHeader>(
+      `INSERT INTO articles (title, content, author_id, status)
+       VALUES (?, ?, ?, ?)`,
+      [title, content, author_id, status],
+    );
+
+    const articleId = result.insertId;
+
+    await pool.query(
+      `
+      INSERT INTO article_categorie (id_article, id_categorie)
+      VALUES (?, ?)
+      `,
+      [articleId, category_id],
+    );
+  },
 };
 
 export default DashboardModel;

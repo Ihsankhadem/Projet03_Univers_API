@@ -1,4 +1,3 @@
-
 // // src/middlewares/auth.middleware.ts
 
 import { Request, Response, NextFunction } from "express";
@@ -19,7 +18,7 @@ export interface AuthRequest extends Request {
 export const authenticate = (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const header = req.headers.authorization;
 
@@ -60,12 +59,6 @@ export const requireRole = (roles: Role[]) => {
     next();
   };
 };
-
-
-
-
-
-
 
 // import { Request, Response, NextFunction } from "express";
 // import jwt, { JwtPayload } from "jsonwebtoken";

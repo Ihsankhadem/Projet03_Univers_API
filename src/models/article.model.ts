@@ -1,5 +1,6 @@
 // src/models/article.model.ts
 import pool from "../config/db";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export interface Article {
   id?: number;
@@ -24,8 +25,9 @@ const ArticleModel = {
       JOIN users u            ON a.author_id   = u.id_user
       LEFT JOIN categories c  ON a.category_id = c.id
       WHERE a.status = 'publié'
-      ORDER BY a.created_at DESC`
+      ORDER BY a.created_at DESC`,
     );
+
     return rows;
   },
 
@@ -38,8 +40,9 @@ const ArticleModel = {
       FROM articles a
       JOIN users u            ON a.author_id   = u.id_user
       LEFT JOIN categories c  ON a.category_id = c.id
-      ORDER BY a.created_at DESC`
+      ORDER BY a.created_at DESC`,
     );
+
     return rows;
   },
 
@@ -54,26 +57,28 @@ const ArticleModel = {
       LEFT JOIN categories c  ON a.category_id = c.id
       WHERE a.author_id = ?
       ORDER BY a.created_at DESC`,
-      [author_id]
+      [author_id],
     );
+
     return rows;
   },
 
   // Un article par ID
   findById: async (id: number) => {
-  const [rows]: any = await pool.query(
-    `SELECT a.*, c.name AS category
-    FROM articles a
-    LEFT JOIN categories c ON a.category_id = c.id
-    WHERE a.id = ?`,
-    [id]
-  );
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT a.*, c.name AS category
+       FROM articles a
+       LEFT JOIN categories c ON a.category_id = c.id
+       WHERE a.id = ?`,
+      [id],
+    );
+
     return rows[0] || null;
   },
 
   // Créer un article
   create: async (data: Article) => {
-    const [result]: any = await pool.query(
+    const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO articles (title, content, image, author_id, category_id, status)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
@@ -83,15 +88,17 @@ const ArticleModel = {
         data.author_id,
         data.category_id ?? null,
         data.status ?? "brouillon",
-      ]
+      ],
     );
-    return result.insertId as number;
+
+    return result.insertId;
   },
 
   // Mettre à jour un article
   update: async (id: number, data: Partial<Article>) => {
-    const [result]: any = await pool.query(
-      `UPDATE articles SET title=?, content=?, image=?, category_id=?, status=?
+    const [result] = await pool.query<ResultSetHeader>(
+      `UPDATE articles
+       SET title=?, content=?, image=?, category_id=?, status=?
        WHERE id=?`,
       [
         data.title,
@@ -100,24 +107,29 @@ const ArticleModel = {
         data.category_id ?? null,
         data.status,
         id,
-      ]
+      ],
     );
-    return result.affectedRows as number;
+
+    return result.affectedRows;
   },
 
   // Incrémenter les vues
   incrementViews: async (id: number) => {
-    await pool.query("UPDATE articles SET views = views + 1 WHERE id = ?", [id]);
+    await pool.query(
+      "UPDATE articles SET views = views + 1 WHERE id = ?",
+      [id],
+    );
   },
 
   // Supprimer un article
   delete: async (id: number) => {
-    const [result]: any = await pool.query(
+    const [result] = await pool.query<ResultSetHeader>(
       "DELETE FROM articles WHERE id = ?",
-      [id]
+      [id],
     );
-    return result.affectedRows as number;
-  }
+
+    return result.affectedRows;
+  },
 };
 
 export default ArticleModel;
