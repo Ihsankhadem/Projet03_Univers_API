@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import SpaceXModel from "../models/spacex.model";
+import SpaceXModel from "../models/spacex.model.js";
 
 const SpaceXController = {
   // GET /api/spacex/upcoming
@@ -24,7 +24,7 @@ const SpaceXController = {
   },
 
   // GET /api/spacex/:id
-  getById: async (req: Request, res: Response) => {
+  getById: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const data = await SpaceXModel.getById(req.params.id);
       res.json(data);

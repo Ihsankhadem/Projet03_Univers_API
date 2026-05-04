@@ -1,7 +1,7 @@
 // src/controllers/dashboardAdmin.controller.ts
 
 import { Request, Response } from "express";
-import DashboardModel from "../models/dashboardAdmin.model";
+import DashboardModel from "../models/dashboardAdmin.model.js";
 
 const DashboardController = {
   getStats: async (_req: Request, res: Response) => {

@@ -1,7 +1,7 @@
 // src/routes/articles.ts
 import { Router } from "express";
-import ArticleController from "../controllers/article.controller";
-import { authenticate, requireRole } from "../middlewares/auth.middleware";
+import ArticleController from "../controllers/article.controller.js";
+import { authenticate, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 

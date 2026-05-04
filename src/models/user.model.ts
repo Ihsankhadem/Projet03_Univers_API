@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export interface User extends RowDataPacket {

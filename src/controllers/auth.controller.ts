@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import UserModel from "../models/user.model";
+import UserModel from "../models/user.model.js";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -77,10 +77,10 @@ const AuthController = {
   },
 
   // LOGIN
-    login: async (req: Request, res: Response) => {
-      try {
-        let { email } = req.body;
-        const { password } = req.body;
+  login: async (req: Request, res: Response) => {
+    try {
+      let { email } = req.body;
+      const { password } = req.body;
 
       // Validation basique
       if (!email || !password) {

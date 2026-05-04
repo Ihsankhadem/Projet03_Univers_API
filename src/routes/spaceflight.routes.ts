@@ -1,5 +1,5 @@
 import { Router } from "express";
-import SpaceflightController from "../controllers/spaceflight.controller";
+import SpaceflightController from "../controllers/spaceflight.controller.js";
 
 const router = Router();
 

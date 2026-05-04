@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import NasaModel from "../models/nasa.model";
+import NasaModel from "../models/nasa.model.js";
 
 const NasaController = {
   // GET /api/nasa/apod

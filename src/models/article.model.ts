@@ -1,5 +1,5 @@
 // src/models/article.model.ts
-import pool from "../config/db";
+import pool from "../config/db.js";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export interface Article {
@@ -115,10 +115,9 @@ const ArticleModel = {
 
   // Incrémenter les vues
   incrementViews: async (id: number) => {
-    await pool.query(
-      "UPDATE articles SET views = views + 1 WHERE id = ?",
-      [id],
-    );
+    await pool.query("UPDATE articles SET views = views + 1 WHERE id = ?", [
+      id,
+    ]);
   },
 
   // Supprimer un article
