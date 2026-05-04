@@ -1,5 +1,5 @@
 // models/category.model.ts
-import pool from "../config/db";
+import pool from "../config/db.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export interface Category {
@@ -81,7 +81,6 @@ const CategoryModel = {
 
   // ---------------- Supprimer ----------------
   delete: async (id: number) => {
-    // enlève relation article/category
     await pool.query("DELETE FROM article_categorie WHERE id_categorie = ?", [
       id,
     ]);

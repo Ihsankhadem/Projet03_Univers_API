@@ -1,5 +1,5 @@
-import { translate } from "../services/translate.service";
-import { translationCache } from "../services/cache.service";
+import { translate } from "../services/translate.service.js";
+import { translationCache } from "../services/cache.service.js";
 
 const BASE_URL = "https://api.spaceflightnewsapi.net/v4";
 

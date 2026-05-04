@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import SpaceflightModel from "../models/spaceflight.model";
+import SpaceflightModel from "../models/spaceflight.model.js";
 
 const SpaceflightController = {
   // GET /api/spaceflight/articles?limit=12&offset=0

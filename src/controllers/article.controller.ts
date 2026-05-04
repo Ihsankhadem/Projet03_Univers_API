@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import ArticleModel from "../models/article.model";
-import { AuthRequest } from "../middlewares/role.middleware";
+import ArticleModel from "../models/article.model.js";
+import { AuthRequest } from "../middlewares/role.middleware.js";
 
 const ArticleController = {
   // GET /api/articles

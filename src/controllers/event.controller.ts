@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import EventModel from "../models/event.model";
+import EventModel from "../models/event.model.js";
 
 const EventController = {
   // GET /api/events

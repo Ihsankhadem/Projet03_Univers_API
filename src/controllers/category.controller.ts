@@ -1,6 +1,6 @@
 //controllers/category.controller
 import { Request, Response } from "express";
-import CategoryModel from "../models/category.model";
+import CategoryModel from "../models/category.model.js";
 
 const CategoryController = {
   // GET /api/categories

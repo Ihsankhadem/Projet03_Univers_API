@@ -1,5 +1,5 @@
 import { Router } from "express";
-import SpaceXController from "../controllers/spacex.controller";
+import SpaceXController from "../controllers/spacex.controller.js";
 
 const router = Router();
 

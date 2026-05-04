@@ -1,5 +1,5 @@
 import { Router } from "express";
-import NasaController from "../controllers/nasa.controller";
+import NasaController from "../controllers/nasa.controller.js";
 
 const router = Router();
 

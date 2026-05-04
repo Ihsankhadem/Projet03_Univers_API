@@ -3,15 +3,15 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
-import pool from "./config/db";
-import auth from "./routes/auth.route";
-import articles from "./routes/articles.route";
-import events from "./routes/events.routes";
-import categories from "./routes/category.route";
-import nasa from "./routes/nasa.route";
-import spaceflight from "./routes/spaceflight.routes";
-import spacex from "./routes/spacex.routes";
-import dashboardAdmin from "./routes/dashboardAdmin.route";
+import pool from "./config/db.js";
+import auth from "./routes/auth.route.js";
+import articles from "./routes/articles.route.js";
+import events from "./routes/events.routes.js";
+import categories from "./routes/category.route.js";
+import nasa from "./routes/nasa.route.js";
+import spaceflight from "./routes/spaceflight.routes.js";
+import spacex from "./routes/spacex.routes.js";
+import dashboardAdmin from "./routes/dashboardAdmin.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
