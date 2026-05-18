@@ -12,6 +12,7 @@ import nasa from "./routes/nasa.route.js";
 import spaceflight from "./routes/spaceflight.routes.js";
 import spacex from "./routes/spacex.routes.js";
 import dashboardAdmin from "./routes/dashboardAdmin.route.js";
+import users from "./routes/user.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use("/api/nasa", nasa);
 app.use("/api/spaceflight", spaceflight);
 app.use("/api/spacex", spacex);
 app.use("/api/dashboard/admin", dashboardAdmin);
+app.use("/api/users", users);
 
 app.listen(PORT, async () => {
   try {
