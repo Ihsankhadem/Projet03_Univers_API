@@ -66,6 +66,36 @@ const UserModel = {
     return rows.length ? rows[0] : null;
   },
 
+  // ================= STATS =================
+  getStats: async () => {
+    const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      COUNT(*) AS total_users,
+
+      SUM(
+        CASE
+          WHEN role = 'administrateur' THEN 1
+          ELSE 0
+        END
+      ) AS total_admins,
+
+      SUM(
+        CASE
+          WHEN role = 'rédacteur' THEN 1
+          ELSE 0
+        END
+      ) AS total_editors,
+
+      (
+        SELECT COUNT(*)
+        FROM articles
+      ) AS total_articles
+    FROM users
+  `);
+
+    return rows[0];
+  },
+
   create: async (user: CreateUser): Promise<number> => {
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO users (name, email, password, role, must_change_password) VALUES (?, ?, ?, ?, ?)`,

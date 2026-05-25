@@ -1,3 +1,5 @@
+// dashboardAdmin.model.ts
+
 import pool from "../config/db.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
@@ -117,30 +119,35 @@ const DashboardModel = {
     {
       title,
       content,
+      image,
       category_id,
       status,
     }: {
       title: string;
       content: string;
+      image: string;
       category_id: number;
       status: string;
     },
   ) => {
     await pool.query(
-      `UPDATE articles SET title = ?, content = ?, status = ? WHERE id = ?`,
-      [title, content, status, id],
+      `
+    UPDATE articles 
+    SET title = ?, content = ?, image = ?, status = ?
+    WHERE id = ?
+    `,
+      [title, content, image, status, id],
     );
 
     await pool.query(
       `
-      INSERT INTO article_categorie (id_article, id_categorie)
-      VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE id_categorie = VALUES(id_categorie)
-      `,
+    INSERT INTO article_categorie (id_article, id_categorie)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE id_categorie = VALUES(id_categorie)
+    `,
       [id, category_id],
     );
   },
-
   updateStatus: async (
     id: number,
     status: "publié" | "brouillon" | "suspendu",
@@ -162,20 +169,22 @@ const DashboardModel = {
   addArticle: async ({
     title,
     content,
+    image,
     author_id,
     category_id,
     status,
   }: {
     title: string;
     content: string;
+    image: string;
     author_id: number;
     category_id: number;
     status: string;
   }) => {
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO articles (title, content, author_id, status)
-       VALUES (?, ?, ?, ?)`,
-      [title, content, author_id, status],
+      `INSERT INTO articles (title, content, image, author_id, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [title, content, image, author_id, status],
     );
 
     const articleId = result.insertId;

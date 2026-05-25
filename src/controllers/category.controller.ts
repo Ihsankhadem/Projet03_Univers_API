@@ -13,6 +13,19 @@ const CategoryController = {
     }
   },
 
+  getStats: async (_req: Request, res: Response) => {
+    try {
+      const stats = await CategoryModel.getStats();
+
+      res.json(stats);
+    } catch (err) {
+      res.status(500).json({
+        error: "Erreur serveur",
+        details: err,
+      });
+    }
+  },
+
   // GET /api/categories/:id
   getOne: async (req: Request, res: Response) => {
     try {

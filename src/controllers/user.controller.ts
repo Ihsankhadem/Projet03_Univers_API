@@ -19,6 +19,20 @@ const UserController = {
     }
   },
 
+  // ================= STATS =================
+  getStats: async (_req: Request, res: Response) => {
+    try {
+      const stats = await UserModel.getStats();
+
+      res.json(stats);
+    } catch (err) {
+      res.status(500).json({
+        error: "Erreur serveur",
+        details: err,
+      });
+    }
+  },
+
   createUser: async (req: Request, res: Response) => {
     try {
       const { name, email, role } = req.body;

@@ -34,6 +34,25 @@ const CategoryModel = {
     return rows;
   },
 
+  getStats: async () => {
+    const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      (SELECT COUNT(*) FROM categories) AS total_categories,
+
+      (SELECT COUNT(*) FROM article_categorie) AS total_articles,
+
+      (
+        SELECT COUNT(*)
+        FROM categories c
+        LEFT JOIN article_categorie ac
+          ON ac.id_categorie = c.id
+        WHERE ac.id_article IS NULL
+      ) AS empty_categories
+  `);
+
+    return rows[0];
+  },
+
   // ---------------- Une catégorie ----------------
   findById: async (id: number) => {
     const [rows] = await pool.query<CategoryRow[]>(
