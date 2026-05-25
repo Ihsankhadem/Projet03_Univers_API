@@ -40,13 +40,16 @@ const DashboardController = {
 
   updateArticle: async (req: Request, res: Response) => {
     try {
-      const { title, content, category_id, status } = req.body;
+      const { title, content, image, category_id, status } = req.body;
+
       await DashboardModel.updateArticle(Number(req.params.id), {
         title,
         content,
+        image,
         category_id,
         status,
       });
+
       res.json({ success: true });
     } catch (err) {
       res
@@ -84,10 +87,12 @@ const DashboardController = {
 
   addArticle: async (req: Request, res: Response) => {
     try {
-      const { title, content, author_id, category_id, status } = req.body;
+      const { title, content, image, author_id, category_id, status } =
+        req.body;
       await DashboardModel.addArticle({
         title,
         content,
+        image,
         author_id,
         category_id,
         status,
