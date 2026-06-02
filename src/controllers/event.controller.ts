@@ -1,18 +1,20 @@
 import { Request, Response } from "express";
 import EventModel from "../models/event.model.js";
 
+// fichiers a creer : helpers validation simples
+const isValidTime = (t: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(t);
+
+const isValidDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d);
+
 const EventController = {
   // ================= GET ALL =================
   getAll: async (_req: Request, res: Response) => {
     try {
       const events = await EventModel.findAll();
-
       res.json(events);
     } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+      console.error(err);
+      res.status(500).json({ error: "Erreur serveur" });
     }
   },
 
@@ -24,19 +26,14 @@ const EventController = {
       const event = await EventModel.findById(id);
 
       if (!event) {
-        res.status(404).json({
+        return res.status(404).json({
           error: "Événement non trouvé",
         });
-
-        return;
       }
 
       res.json(event);
-    } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+    } catch {
+      res.status(500).json({ error: "Erreur serveur" });
     }
   },
 
@@ -53,14 +50,35 @@ const EventController = {
         external_url,
       } = req.body;
 
-      // VALIDATION
+      // ================= VALIDATION =================
       if (!title || !date || !start_time || !location || !external_url) {
-        res.status(400).json({
-          error:
-            "Champs obligatoires manquants (title, date, start_time, location, external_url)",
+        return res.status(400).json({
+          error: "Champs obligatoires manquants",
         });
+      }
 
-        return;
+      if (!isValidDate(date)) {
+        return res.status(400).json({
+          error: "Format date invalide (YYYY-MM-DD)",
+        });
+      }
+
+      if (!isValidTime(start_time)) {
+        return res.status(400).json({
+          error: "Heure de début invalide",
+        });
+      }
+
+      if (end_time && !isValidTime(end_time)) {
+        return res.status(400).json({
+          error: "Heure de fin invalide",
+        });
+      }
+
+      if (end_time && start_time && end_time <= start_time) {
+        return res.status(400).json({
+          error: "L'heure de fin doit être après l'heure de début",
+        });
       }
 
       const id = await EventModel.create({
@@ -75,13 +93,10 @@ const EventController = {
 
       res.status(201).json({
         id,
-        message: "Événement créé avec succès",
+        message: "Événement créé",
       });
-    } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+    } catch {
+      res.status(500).json({ error: "Erreur serveur" });
     }
   },
 
@@ -100,14 +115,16 @@ const EventController = {
         external_url,
       } = req.body;
 
-      // VALIDATION
       if (!title || !date || !start_time || !location || !external_url) {
-        res.status(400).json({
-          error:
-            "Champs obligatoires manquants (title, date, start_time, location, external_url)",
+        return res.status(400).json({
+          error: "Champs obligatoires manquants",
         });
+      }
 
-        return;
+      if (!isValidDate(date)) {
+        return res.status(400).json({
+          error: "Format date invalide",
+        });
       }
 
       const affected = await EventModel.update(id, {
@@ -121,21 +138,16 @@ const EventController = {
       });
 
       if (!affected) {
-        res.status(404).json({
+        return res.status(404).json({
           error: "Événement non trouvé",
         });
-
-        return;
       }
 
       res.json({
-        message: "Événement mis à jour avec succès",
+        message: "Événement mis à jour",
       });
-    } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+    } catch {
+      res.status(500).json({ error: "Erreur serveur" });
     }
   },
 
@@ -147,21 +159,16 @@ const EventController = {
       const affected = await EventModel.delete(id);
 
       if (!affected) {
-        res.status(404).json({
+        return res.status(404).json({
           error: "Événement non trouvé",
         });
-
-        return;
       }
 
       res.json({
         message: "Événement supprimé",
       });
-    } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+    } catch {
+      res.status(500).json({ error: "Erreur serveur" });
     }
   },
 };

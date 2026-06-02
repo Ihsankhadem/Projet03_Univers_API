@@ -4,8 +4,8 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 export interface Event {
   id?: number;
   title: string;
-  date: string;
-  start_time: string;
+  date: string; // YYYY-MM-DD
+  start_time: string; // HH:mm
   end_time?: string | null;
   location: string;
   image?: string | null;
@@ -23,43 +23,45 @@ interface EventRow extends RowDataPacket {
   external_url: string;
 }
 
+const formatEvent = (event: EventRow): Event => ({
+  ...event,
+  date: event.date?.toString().slice(0, 10),
+});
+
 const EventModel = {
-  // ================= TOUS LES ÉVÉNEMENTS =================
-  findAll: async () => {
+  // ================= GET ALL =================
+  findAll: async (): Promise<Event[]> => {
     const [rows] = await pool.query<EventRow[]>(
-      `SELECT *
-        FROM events
-        ORDER BY date ASC, start_time ASC `,
+      `SELECT * FROM events ORDER BY date ASC, start_time ASC`,
     );
 
-    return rows;
+    return rows.map(formatEvent);
   },
 
-  // ================= UN ÉVÉNEMENT =================
-  findById: async (id: number) => {
+  // ================= GET BY ID =================
+  findById: async (id: number): Promise<Event | null> => {
     const [rows] = await pool.query<EventRow[]>(
-      `SELECT *
-        FROM events
-        WHERE id = ? `,
+      `SELECT * FROM events WHERE id = ?`,
       [id],
     );
 
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+    return formatEvent(rows[0]);
   },
 
   // ================= CREATE =================
-  create: async (data: Event) => {
+  create: async (data: Event): Promise<number> => {
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO events (
-          title,
-          date,
-          start_time,
-          end_time,
-          location,
-          image,
-          external_url
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?) `,
+        title,
+        date,
+        start_time,
+        end_time,
+        location,
+        image,
+        external_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         data.title,
         data.date,
@@ -75,18 +77,17 @@ const EventModel = {
   },
 
   // ================= UPDATE =================
-  update: async (id: number, data: Event) => {
+  update: async (id: number, data: Event): Promise<number> => {
     const [result] = await pool.query<ResultSetHeader>(
-      ` UPDATE events
-        SET
-          title = ?,
-          date = ?,
-          start_time = ?,
-          end_time = ?,
-          location = ?,
-          image = ?,
-          external_url = ?
-        WHERE id = ? `,
+      `UPDATE events SET
+        title = ?,
+        date = ?,
+        start_time = ?,
+        end_time = ?,
+        location = ?,
+        image = ?,
+        external_url = ?
+      WHERE id = ?`,
       [
         data.title,
         data.date,
@@ -103,10 +104,9 @@ const EventModel = {
   },
 
   // ================= DELETE =================
-  delete: async (id: number) => {
+  delete: async (id: number): Promise<number> => {
     const [result] = await pool.query<ResultSetHeader>(
-      ` DELETE FROM events
-        WHERE id = ? `,
+      `DELETE FROM events WHERE id = ?`,
       [id],
     );
 
