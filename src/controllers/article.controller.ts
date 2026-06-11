@@ -1,110 +1,83 @@
-import { Request, Response } from "express";
-import ArticleModel from "../models/article.model.js";
+// src/controllers/article.controller.ts
+
+import { Request, Response, NextFunction } from "express";
+import ArticleService from "../services/article.service.js";
 import { AuthRequest } from "../middlewares/role.middleware.js";
 
 const ArticleController = {
-  // GET /api/articles
-  getAll: async (_req: Request, res: Response) => {
+  getAll: async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const articles = await ArticleModel.findAll();
+      const articles = await ArticleService.getAll();
       res.json(articles);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+    } catch (error) {
+      next(error);
     }
   },
 
-  // GET /api/articles/admin
-  getAllAdmin: async (_req: Request, res: Response) => {
+  getAllAdmin: async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const articles = await ArticleModel.findAllAdmin();
+      const articles = await ArticleService.getAllAdmin();
       res.json(articles);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+    } catch (error) {
+      next(error);
     }
   },
 
-  // GET /api/articles/author/:author_id
-  getByAuthor: async (req: Request, res: Response) => {
+  getByAuthor: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const articles = await ArticleModel.findByAuthor(
+      const articles = await ArticleService.getByAuthor(
         Number(req.params.author_id),
       );
+
       res.json(articles);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+    } catch (error) {
+      next(error);
     }
   },
 
-  // GET /api/articles/:id
-  getOne: async (req: Request, res: Response) => {
+  getOne: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const article = await ArticleModel.findById(Number(req.params.id));
+      const article = await ArticleService.getOne(Number(req.params.id));
 
-      if (!article) {
-        res.status(404).json({ error: "Article non trouvé" });
-        return;
-      }
-
-      await ArticleModel.incrementViews(Number(req.params.id));
       res.json(article);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+    } catch (error) {
+      next(error);
     }
   },
 
-  // POST
-  create: async (req: AuthRequest, res: Response) => {
+  create: async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const { title, content, image, category_id, status } = req.body;
-      const author_id = req.user!.id;
-
-      const id = await ArticleModel.create({
-        title,
-        content,
-        image,
-        author_id,
-        category_id,
-        status,
+      const result = await ArticleService.create({
+        ...req.body,
+        author_id: req.user!.id,
       });
 
-      res.status(201).json({ id, message: "Article créé avec succès" });
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
     }
   },
 
-  // PUT
-  update: async (req: Request, res: Response) => {
+  update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const affected = await ArticleModel.update(
+      const result = await ArticleService.update(
         Number(req.params.id),
         req.body,
       );
 
-      if (!affected) {
-        res.status(404).json({ error: "Article non trouvé" });
-        return;
-      }
-
-      res.json({ message: "Article mis à jour" });
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      res.json(result);
+    } catch (error) {
+      next(error);
     }
   },
 
-  // DELETE
-  delete: async (req: Request, res: Response) => {
+  delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const affected = await ArticleModel.delete(Number(req.params.id));
+      const result = await ArticleService.delete(Number(req.params.id));
 
-      if (!affected) {
-        res.status(404).json({ error: "Article non trouvé" });
-        return;
-      }
-
-      res.json({ message: "Article supprimé" });
-    } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      res.json(result);
+    } catch (error) {
+      next(error);
     }
   },
 };

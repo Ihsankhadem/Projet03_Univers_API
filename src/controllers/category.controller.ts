@@ -1,119 +1,78 @@
-//controllers/category.controller
-import { Request, Response } from "express";
-import CategoryModel from "../models/category.model.js";
+import { Request, Response, NextFunction } from "express";
+import CategoryService from "../services/category.service.js";
 
 const CategoryController = {
-  // GET /api/categories
-  getAll: async (_req: Request, res: Response) => {
+  getAll: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const categories = await CategoryModel.findAll();
+      const search = req.query.search as string | undefined;
+      const categories = await CategoryService.getAll(search);
       res.json(categories);
     } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      next(err);
     }
   },
 
-  getStats: async (_req: Request, res: Response) => {
+  getStats: async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const stats = await CategoryModel.getStats();
-
+      const stats = await CategoryService.getStats();
       res.json(stats);
     } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+      next(err);
     }
   },
 
-  // GET /api/categories/:id
-  getOne: async (req: Request, res: Response) => {
+  getOne: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const category = await CategoryModel.findById(Number(req.params.id));
-      if (!category) {
-        res.status(404).json({ error: "Catégorie non trouvée" });
-        return;
-      }
+      const category = await CategoryService.getOne(Number(req.params.id));
       res.json(category);
     } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      next(err);
     }
   },
 
-  getArticlesByCategory: async (req: Request, res: Response) => {
+  getArticlesByCategory: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-      const id = Number(req.params.id);
-
-      const articles = await CategoryModel.getArticlesByCategory(id);
-
+      const articles = await CategoryService.getArticlesByCategory(
+        Number(req.params.id),
+      );
       res.json(articles);
     } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+      next(err);
     }
   },
 
-  // POST /api/categories
-  create: async (req: Request, res: Response) => {
+  create: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name } = req.body;
-      if (!name) {
-        res.status(400).json({ error: "Le champ 'name' est obligatoire" });
-        return;
-      }
-      const id = await CategoryModel.create(name);
-      res.status(201).json({ id, message: "Catégorie créée avec succès" });
+      const result = await CategoryService.create(req.body.name);
+      res.status(201).json(result);
     } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      next(err);
     }
   },
 
-  // PUT /api/categories/:id
-  update: async (req: Request, res: Response) => {
+  update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
-      const { name } = req.body;
+      const result = await CategoryService.update(
+        Number(req.params.id),
+        req.body.name,
+      );
 
-      if (!name) {
-        res.status(400).json({
-          error: "Le champ 'name' est obligatoire",
-        });
-        return;
-      }
-
-      const affected = await CategoryModel.update(id, name);
-
-      if (!affected) {
-        res.status(404).json({
-          error: "Catégorie non trouvée",
-        });
-        return;
-      }
-
-      res.json({
-        message: "Catégorie mise à jour",
-      });
+      res.json(result);
     } catch (err) {
-      res.status(500).json({
-        error: "Erreur serveur",
-        details: err,
-      });
+      next(err);
     }
   },
 
-  // DELETE /api/categories/:id
-  delete: async (req: Request, res: Response) => {
+  delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const affected = await CategoryModel.delete(Number(req.params.id));
-      if (!affected) {
-        res.status(404).json({ error: "Catégorie non trouvée" });
-        return;
-      }
-      res.json({ message: "Catégorie supprimée" });
+      const result = await CategoryService.delete(Number(req.params.id));
+      res.json(result);
     } catch (err) {
-      res.status(500).json({ error: "Erreur serveur", details: err });
+      next(err);
     }
   },
 };

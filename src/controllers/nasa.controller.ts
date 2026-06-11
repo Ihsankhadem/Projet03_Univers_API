@@ -1,40 +1,63 @@
+// src/controllers/nasa.controller.ts
+
 import { Request, Response } from "express";
+import { ZodError } from "zod";
+
 import NasaModel from "../models/nasa.model.js";
+import { getLastSchema, getRangeSchema } from "../validators/nasa.validator.js";
 
 const NasaController = {
-  // GET /api/nasa/apod
   getToday: async (_req: Request, res: Response) => {
     try {
       const data = await NasaModel.getToday();
+
       res.json(data);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur NASA APOD", details: err });
+    } catch {
+      res.status(502).json({
+        error: "NASA API unavailable",
+      });
     }
   },
 
-  // GET /api/nasa/apod/last?count=10
   getLast: async (req: Request, res: Response) => {
     try {
-      const count = Number(req.query.count) || 10;
+      const { count } = getLastSchema.parse(req.query);
+
       const data = await NasaModel.getLast(count);
+
       res.json(data);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur NASA APOD", details: err });
+    } catch (err: unknown) {
+      if (err instanceof ZodError) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: err.issues,
+        });
+      }
+
+      return res.status(502).json({
+        error: "NASA API unavailable",
+      });
     }
   },
 
-  // GET /api/nasa/apod/range?start=2026-01-01&end=2026-01-07
   getRange: async (req: Request, res: Response) => {
     try {
-      const { start, end } = req.query as { start: string; end: string };
-      if (!start || !end) {
-        res.status(400).json({ error: "Paramètres start et end requis" });
-        return;
-      }
+      const { start, end } = getRangeSchema.parse(req.query);
+
       const data = await NasaModel.getRange(start, end);
+
       res.json(data);
-    } catch (err) {
-      res.status(500).json({ error: "Erreur NASA APOD", details: err });
+    } catch (err: unknown) {
+      if (err instanceof ZodError) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: err.issues,
+        });
+      }
+
+      return res.status(502).json({
+        error: "NASA API unavailable",
+      });
     }
   },
 };

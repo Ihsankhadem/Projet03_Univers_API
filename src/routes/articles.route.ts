@@ -1,7 +1,13 @@
 // src/routes/articles.ts
+
 import { Router } from "express";
 import ArticleController from "../controllers/article.controller.js";
 import { authenticate, requireRole } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  createArticleSchema,
+  updateArticleSchema,
+} from "../validators/article.validator.js";
 
 const router = Router();
 
@@ -24,7 +30,7 @@ router.get(
   ArticleController.getByAuthor,
 );
 
-// TOUJOURS APRÈS les routes spécifiques
+// GET one
 router.get("/:id", ArticleController.getOne);
 
 // POST
@@ -32,6 +38,7 @@ router.post(
   "/",
   authenticate,
   requireRole(["administrateur", "rédacteur"]),
+  validate(createArticleSchema),
   ArticleController.create,
 );
 
@@ -40,6 +47,7 @@ router.put(
   "/:id",
   authenticate,
   requireRole(["administrateur", "rédacteur"]),
+  validate(updateArticleSchema),
   ArticleController.update,
 );
 
@@ -48,6 +56,7 @@ router.delete(
   "/:id",
   authenticate,
   requireRole(["administrateur"]),
+  validate(updateArticleSchema),
   ArticleController.delete,
 );
 
