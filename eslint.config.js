@@ -1,14 +1,17 @@
-import js from "@eslint/js";
+// src/eslint.config.js
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
 
 export default [
   {
     ignores: ["dist", "node_modules"],
   },
+
   js.configs.recommended,
   ...tseslint.configs.recommended,
+
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -16,7 +19,17 @@ export default [
     },
     rules: {
       "no-console": "off",
+
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
+
   prettierConfig,
 ];

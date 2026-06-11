@@ -13,6 +13,8 @@ import spaceflight from "./routes/spaceflight.routes.js";
 import spacex from "./routes/spacex.routes.js";
 import dashboardAdmin from "./routes/dashboardAdmin.route.js";
 import users from "./routes/user.route.js";
+import upload from "./routes/upload.route.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,6 +39,8 @@ app.use("/api/spaceflight", spaceflight);
 app.use("/api/spacex", spacex);
 app.use("/api/dashboard/admin", dashboardAdmin);
 app.use("/api/users", users);
+app.use("/api/upload", upload);
+app.use(errorHandler);
 
 app.listen(PORT, async () => {
   try {
