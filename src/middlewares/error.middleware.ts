@@ -11,6 +11,8 @@ export const errorHandler = (
 ) => {
   // Zod validation
   if (err instanceof ZodError) {
+    console.log("🔥 ZOD DETAILS =", JSON.stringify(err.flatten(), null, 2));
+
     return res.status(400).json({
       error: "Validation échouée",
       details: err.flatten(),

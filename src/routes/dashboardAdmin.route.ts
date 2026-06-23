@@ -1,3 +1,4 @@
+// src/routes/dashboardAdmin.route.ts
 import express from "express";
 import { authenticate, requireRole } from "../middlewares/auth.middleware.js";
 import DashboardAdminController from "../controllers/dashboardAdmin.controller.js";

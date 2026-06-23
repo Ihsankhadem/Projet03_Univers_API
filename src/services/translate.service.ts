@@ -1,5 +1,6 @@
 // MyMemory API — gratuit, pas de limite par minute
-const EMAIL = "votre@email.com";
+// src/services/translate.service.ts
+const EMAIL = "contact@univers.fr";
 
 export async function translate(text: string): Promise<string> {
   if (!text?.trim()) return "";
@@ -15,9 +16,5 @@ export async function translate(text: string): Promise<string> {
 }
 
 export async function translateBatch(texts: string[]): Promise<string[]> {
-  const results: string[] = [];
-  for (const text of texts) {
-    results.push(await translate(text));
-  }
-  return results;
+  return Promise.all(texts.map((text) => translate(text)));
 }

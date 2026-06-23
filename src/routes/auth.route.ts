@@ -2,6 +2,7 @@
 import express from "express";
 import AuthController from "../controllers/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
+import { authenticate } from "../middlewares/auth.middleware.js";
 import {
   registerSchema,
   loginSchema,
@@ -15,7 +16,11 @@ router.post("/login", validate(loginSchema), AuthController.login);
 
 router.post(
   "/change-password",
+  (req, _res, next) => {
+    next();
+  },
   validate(changePasswordSchema),
+  authenticate,
   AuthController.changePassword,
 );
 
