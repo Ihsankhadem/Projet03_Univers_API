@@ -1,5 +1,7 @@
+// src/controllers/auth.controller.ts
 import { Request, Response, NextFunction } from "express";
 import AuthService from "../services/auth.service.js";
+import { AuthRequest } from "../middlewares/auth.middleware.js";
 
 const AuthController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
@@ -21,10 +23,22 @@ const AuthController = {
     }
   },
 
-  changePassword: async (req: Request, res: Response, next: NextFunction) => {
+  changePassword: async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-      const { userId, password } = req.body;
-      const result = await AuthService.changePassword(userId, password);
+      console.log("🔥 BODY =", req.body); // 👈 AJOUTE ÇA
+      console.log("👤 USER =", req.user); // 👈 AJOUTE ÇA
+      const { password } = req.body;
+
+      if (!req.user) {
+        return res.status(401).json({ message: "Non authentifié" });
+      }
+
+      const result = await AuthService.changePassword(req.user.id, password);
+
       res.json(result);
     } catch (err) {
       next(err);

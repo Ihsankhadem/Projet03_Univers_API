@@ -1,3 +1,4 @@
+// src/services/auth.service.ts
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model.js";
