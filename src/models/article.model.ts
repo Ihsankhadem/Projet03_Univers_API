@@ -27,7 +27,6 @@ const ArticleModel = {
       WHERE a.status = 'publié'
       ORDER BY a.created_at DESC`,
     );
-
     return rows;
   },
 

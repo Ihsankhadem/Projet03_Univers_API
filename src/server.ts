@@ -1,56 +1,46 @@
-import express from "express";
-import cors from "cors";
+// src/server.ts
 import dotenv from "dotenv";
 dotenv.config();
 
 import pool from "./config/db.js";
-import auth from "./routes/auth.route.js";
-import articles from "./routes/articles.route.js";
-import events from "./routes/events.routes.js";
-import categories from "./routes/category.route.js";
-import nasa from "./routes/nasa.route.js";
-import spaceflight from "./routes/spaceflight.routes.js";
-import spacex from "./routes/spacex.routes.js";
-import dashboardAdmin from "./routes/dashboardAdmin.route.js";
-import DashboardRedacteur from "./routes/dashboardRedacteur.route.js";
-import users from "./routes/user.route.js";
-import upload from "./routes/upload.route.js";
-import { errorHandler } from "./middlewares/error.middleware.js";
+import app from "./app.js";
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
-app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+async function waitForMySQL(retries = 10): Promise<void> {
+  while (retries > 0) {
+    try {
+      const conn = await pool.getConnection();
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "50mb",
-  }),
-);
+      conn.release();
 
-app.use("/api/auth", auth);
-app.use("/api/articles", articles);
-app.use("/api/events", events);
-app.use("/api/categories", categories);
-app.use("/api/nasa", nasa);
-app.use("/api/spaceflight", spaceflight);
-app.use("/api/spacex", spacex);
-app.use("/api/dashboard/admin", dashboardAdmin);
-app.use("/api/dashboard/redacteur", DashboardRedacteur);
-app.use("/api/users", users);
-app.use("/api/upload", upload);
-app.use(errorHandler);
+      console.log("✅ Connexion MySQL réussie");
 
-app.listen(PORT, async () => {
-  try {
-    const conn = await pool.getConnection();
-    console.log("✅ Connexion MySQL réussie");
-    conn.release();
-  } catch (err) {
-    console.error("❌ Échec connexion MySQL :", err);
+      return;
+    } catch (error) {
+      console.log("⏳ En attente de MySQL...");
+
+      retries--;
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
   }
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+
+  throw new Error("Impossible de se connecter à MySQL");
+}
+
+async function startServer() {
+  try {
+    await waitForMySQL();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Démarrage impossible :", error);
+
+    process.exit(1);
+  }
+}
+
+startServer();
