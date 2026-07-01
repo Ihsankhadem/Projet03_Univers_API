@@ -3,8 +3,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
+// const JWT_SECRET = process.env.JWT_SECRET as string;
+// if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
 
 export type Role = "rédacteur" | "administrateur";
 
@@ -20,6 +20,11 @@ export const authenticate = (
   res: Response,
   next: NextFunction,
 ) => {
+  const JWT_SECRET = process.env.JWT_SECRET;
+
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET manquant");
+  }
   const header = req.headers.authorization;
 
   if (!header || !header.startsWith("Bearer ")) {

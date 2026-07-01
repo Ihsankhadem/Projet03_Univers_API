@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model.js";
 import { AppError } from "../errors/AppError.js";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+// const JWT_SECRET = process.env.JWT_SECRET as string;
 
-if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
+// if (!JWT_SECRET) throw new Error("JWT_SECRET manquant");
 
 const AuthService = {
   async register(data: { name: string; email: string; password: string }) {
@@ -31,6 +31,11 @@ const AuthService = {
   },
 
   async login(email: string, password: string) {
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+      throw new Error("JWT_SECRET manquant");
+    }
     const user = await UserModel.findByEmail(email.trim().toLowerCase());
 
     if (!user) {
