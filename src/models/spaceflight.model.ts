@@ -7,10 +7,6 @@ import { translate } from "../services/translate.service.js";
 
 const BASE_URL = "https://api.spaceflightnewsapi.net/v4";
 
-/* =========================
-   TYPES
-========================= */
-
 export interface SpaceArticle {
   id: number;
   title: string;
@@ -30,12 +26,11 @@ export interface SpaceflightResponse {
 }
 
 /* =========================
-   FETCH TIMEOUT SAFE
+   FETCH SAFE
 ========================= */
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
-
   const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
@@ -46,36 +41,34 @@ async function fetchWithTimeout(url: string): Promise<Response> {
 }
 
 /* =========================
-   TRANSLATION (DETAIL ONLY)
+   TRANSLATION CORE
+========================= */
+
+async function translateIfNeeded(text: string, key: string) {
+  const cached = translationCache.get(key);
+  if (cached) return cached;
+
+  try {
+    const translated = await translate(text);
+    translationCache.set(key, translated);
+    return translated;
+  } catch {
+    return text;
+  }
+}
+
+/* =========================
+   TRANSLATE ARTICLE (FULL)
 ========================= */
 
 async function translateArticle(article: SpaceArticle): Promise<SpaceArticle> {
-  const titleKey = `title_${article.id}`;
-  const summaryKey = `summary_${article.id}`;
-
-  let title = translationCache.get(titleKey);
-  let summary = translationCache.get(summaryKey);
-
-  if (!title) {
-    try {
-      title = await translate(article.title);
-      translationCache.set(titleKey, title);
-    } catch {
-      title = article.title;
-    }
-  }
-
-  if (!summary) {
-    try {
-      summary = await translate(article.summary);
-      translationCache.set(summaryKey, summary);
-    } catch {
-      summary = article.summary;
-    }
-  }
+  const [title, summary] = await Promise.all([
+    translateIfNeeded(article.title, `title_${article.id}`),
+    translateIfNeeded(article.summary, `summary_${article.id}`),
+  ]);
 
   return {
-    ...article,
+    ...article, // 👈 ARTICLE COMPLET CONSERVÉ
     title,
     summary,
   };
@@ -87,7 +80,7 @@ async function translateArticle(article: SpaceArticle): Promise<SpaceArticle> {
 
 const SpaceflightModel = {
   /**
-   * LIST PAGE → ultra fast (NO translation)
+   * LIST → FAST + translated (light)
    */
   async getArticles(limit = 25, offset = 0): Promise<SpaceflightResponse> {
     const cacheKey = `articles_${limit}_${offset}`;
@@ -103,23 +96,25 @@ const SpaceflightModel = {
 
     const data: SpaceflightResponse = await res.json();
 
-    // 🔥 TRADUCTION LISTE
-    const translated = await Promise.all(
-      data.results.map((article) => translateArticle(article)),
-    );
+    // 🔥 traduction contrôlée (pas de burst)
+    const translatedResults: SpaceArticle[] = [];
+
+    for (const article of data.results) {
+      translatedResults.push(await translateArticle(article));
+    }
 
     const finalData = {
       ...data,
-      results: translated,
+      results: translatedResults,
     };
 
-    spaceflightCache.set(cacheKey, finalData, 60);
+    spaceflightCache.set(cacheKey, finalData, 120); // cache court
 
     return finalData;
   },
 
   /**
-   * SEARCH → fast (NO translation)
+   * SEARCH → same logic
    */
   async search(query: string, limit = 25): Promise<SpaceflightResponse> {
     const cacheKey = `search_${query}_${limit}`;
@@ -135,22 +130,24 @@ const SpaceflightModel = {
 
     const data: SpaceflightResponse = await res.json();
 
-    const translated = await Promise.all(
-      data.results.map((article) => translateArticle(article)),
-    );
+    const translatedResults: SpaceArticle[] = [];
+
+    for (const article of data.results) {
+      translatedResults.push(await translateArticle(article));
+    }
 
     const finalData = {
       ...data,
-      results: translated,
+      results: translatedResults,
     };
 
-    spaceflightCache.set(cacheKey, finalData, 60);
+    spaceflightCache.set(cacheKey, finalData, 120);
 
     return finalData;
   },
 
   /**
-   * DETAIL PAGE → translated
+   * DETAIL → full + translated
    */
   async getById(id: number): Promise<SpaceArticle> {
     const cacheKey = `article_${id}`;
@@ -166,7 +163,7 @@ const SpaceflightModel = {
 
     const translated = await translateArticle(article);
 
-    spaceflightCache.set(cacheKey, translated, 60);
+    spaceflightCache.set(cacheKey, translated, 3600); // cache long
 
     return translated;
   },
