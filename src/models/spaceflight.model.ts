@@ -7,6 +7,8 @@ import { translate } from "../services/translate.service.js";
 
 const BASE_URL = "https://api.spaceflightnewsapi.net/v4";
 
+/* ========================= TYPES ========================= */
+
 export interface SpaceArticle {
   id: number;
   title: string;
@@ -25,9 +27,7 @@ export interface SpaceflightResponse {
   results: SpaceArticle[];
 }
 
-/* =========================
-   FETCH SAFE
-========================= */
+/* ========================= FETCH TIMEOUT SAFE ========================= */
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
@@ -40,131 +40,129 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-/* =========================
-   TRANSLATION CORE
-========================= */
-
-async function translateIfNeeded(text: string, key: string) {
-  const cached = translationCache.get(key);
-  if (cached) return cached;
-
-  try {
-    const translated = await translate(text);
-    translationCache.set(key, translated);
-    return translated;
-  } catch {
-    return text;
-  }
-}
-
-/* =========================
-   TRANSLATE ARTICLE (FULL)
-========================= */
+/* ========================= TRANSLATION (DETAIL ONLY) ========================= */
 
 async function translateArticle(article: SpaceArticle): Promise<SpaceArticle> {
-  const [title, summary] = await Promise.all([
-    translateIfNeeded(article.title, `title_${article.id}`),
-    translateIfNeeded(article.summary, `summary_${article.id}`),
-  ]);
+  const titleKey = `title_${article.id}`;
+  const summaryKey = `summary_${article.id}`;
+
+  let title = translationCache.get(titleKey);
+  let summary = translationCache.get(summaryKey);
+
+  if (!title) {
+    try {
+      title = await translate(article.title);
+      translationCache.set(titleKey, title);
+    } catch {
+      title = article.title;
+    }
+  }
+
+  if (!summary) {
+    try {
+      summary = await translate(article.summary);
+      translationCache.set(summaryKey, summary);
+    } catch {
+      summary = article.summary;
+    }
+  }
 
   return {
-    ...article, // 👈 ARTICLE COMPLET CONSERVÉ
+    ...article,
     title,
     summary,
   };
 }
 
-/* =========================
-   MODEL
-========================= */
+/* ========================= MODEL ========================= */
 
 const SpaceflightModel = {
   /**
-   * LIST → FAST + translated (light)
+   * LIST PAGE → ultra fast (NO translation)
    */
   async getArticles(limit = 25, offset = 0): Promise<SpaceflightResponse> {
     const cacheKey = `articles_${limit}_${offset}`;
-
     const cached = spaceflightCache.get(cacheKey);
+
     if (cached) return cached as SpaceflightResponse;
 
     const res = await fetchWithTimeout(
       `${BASE_URL}/articles/?limit=${limit}&offset=${offset}&ordering=-published_at`,
     );
 
-    if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`Spaceflight API error: ${res.status}`);
+    }
 
     const data: SpaceflightResponse = await res.json();
 
-    // 🔥 traduction contrôlée (pas de burst)
-    const translatedResults: SpaceArticle[] = [];
-
-    for (const article of data.results) {
-      translatedResults.push(await translateArticle(article));
-    }
+    // 🔥 TRADUCTION LISTE
+    const translated = await Promise.all(
+      data.results.map((article) => translateArticle(article)),
+    );
 
     const finalData = {
       ...data,
-      results: translatedResults,
+      results: translated,
     };
 
-    spaceflightCache.set(cacheKey, finalData, 120); // cache court
-
+    spaceflightCache.set(cacheKey, finalData, 60);
     return finalData;
   },
 
   /**
-   * SEARCH → same logic
+   * SEARCH → fast (NO translation)
    */
   async search(query: string, limit = 25): Promise<SpaceflightResponse> {
     const cacheKey = `search_${query}_${limit}`;
-
     const cached = spaceflightCache.get(cacheKey);
+
     if (cached) return cached as SpaceflightResponse;
 
     const res = await fetchWithTimeout(
-      `${BASE_URL}/articles/?search=${encodeURIComponent(query)}&limit=${limit}&ordering=-published_at`,
+      `${BASE_URL}/articles/?search=${encodeURIComponent(
+        query,
+      )}&limit=${limit}&ordering=-published_at`,
     );
 
-    if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`Spaceflight API error: ${res.status}`);
+    }
 
     const data: SpaceflightResponse = await res.json();
 
-    const translatedResults: SpaceArticle[] = [];
-
-    for (const article of data.results) {
-      translatedResults.push(await translateArticle(article));
-    }
+    const translated = await Promise.all(
+      data.results.map((article) => translateArticle(article)),
+    );
 
     const finalData = {
       ...data,
-      results: translatedResults,
+      results: translated,
     };
 
-    spaceflightCache.set(cacheKey, finalData, 120);
-
+    spaceflightCache.set(cacheKey, finalData, 60);
     return finalData;
   },
 
   /**
-   * DETAIL → full + translated
+   * DETAIL PAGE → translated
    */
   async getById(id: number): Promise<SpaceArticle> {
     const cacheKey = `article_${id}`;
-
     const cached = spaceflightCache.get(cacheKey);
+
     if (cached) return cached as SpaceArticle;
 
     const res = await fetchWithTimeout(`${BASE_URL}/articles/${id}/`);
 
-    if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`Spaceflight API error: ${res.status}`);
+    }
 
     const article: SpaceArticle = await res.json();
-
     const translated = await translateArticle(article);
 
-    spaceflightCache.set(cacheKey, translated, 3600); // cache long
-
+    spaceflightCache.set(cacheKey, translated, 60);
     return translated;
   },
 };
