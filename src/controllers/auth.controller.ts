@@ -29,8 +29,7 @@ const AuthController = {
     next: NextFunction,
   ) => {
     try {
-      console.log("🔥 BODY =", req.body); // 👈 AJOUTE ÇA
-      console.log("👤 USER =", req.user); // 👈 AJOUTE ÇA
+
       const { password } = req.body;
 
       if (!req.user) {
