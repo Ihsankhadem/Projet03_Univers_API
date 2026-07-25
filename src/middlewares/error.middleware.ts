@@ -11,7 +11,7 @@ export const errorHandler = (
 ) => {
   // Zod validation
   if (err instanceof ZodError) {
-    console.error("🔥 ERREUR BACKEND :", err); // 👈 IMPORTANT
+
 
     return res.status(400).json({
       error: "Validation échouée",
@@ -26,8 +26,7 @@ export const errorHandler = (
     });
   }
 
-  // debug serveur
-  console.error("🔥 UNHANDLED ERROR:", err);
+
 
   return res.status(500).json({
     error: "Erreur serveur",

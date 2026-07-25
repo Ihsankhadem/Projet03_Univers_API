@@ -15,7 +15,7 @@ export interface Event {
 interface EventRow extends RowDataPacket {
   id: number;
   title: string;
-  date: string;
+  date: string | Date;
   start_time: string;
   end_time: string | null;
   location: string;
@@ -25,7 +25,10 @@ interface EventRow extends RowDataPacket {
 
 const formatEvent = (event: EventRow): Event => ({
   ...event,
-  date: event.date?.toString().slice(0, 10),
+  date:
+    event.date instanceof Date
+      ? event.date.toISOString().split("T")[0]
+      : event.date,
 });
 
 const EventModel = {
