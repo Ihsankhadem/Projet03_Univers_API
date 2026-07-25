@@ -54,12 +54,12 @@ const AuthService = {
 
     return {
       token,
-      mustChangePassword: user.must_change_password,
       user: {
         id: user.id_user,
         name: user.name,
         email: user.email,
         role: user.role,
+        mustChangePassword: Boolean(user.must_change_password),
       },
     };
   },
